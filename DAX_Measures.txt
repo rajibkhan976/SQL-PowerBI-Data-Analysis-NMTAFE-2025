@@ -1,0 +1,112 @@
+DAX Measures Library
+
+1.  Total Crashes Total Crashes = COUNTROWS(‘Crash Information’)
+
+2.  Total Intersections Total Intersections = COUNTROWS(‘Intersection
+    Summary’)
+
+3.  Fatal Crashes Fatal Crashes = CALCULATE( [Total Crashes], ‘Crash
+    Information’[SEVERITY] = “Fatal” )
+
+4.  Hospital Crashes Hospital Crashes = CALCULATE( [Total Crashes],
+    ‘Crash Information’[SEVERITY] = “Hospital” )
+
+5.  Medical Crashes Medical Crashes = CALCULATE( [Total Crashes], ‘Crash
+    Information’[SEVERITY] = “Medical” )
+
+6.  PDO Crashes PDO Crashes = CALCULATE( [Total Crashes], ‘Crash
+    Information’[SEVERITY] = “PDO” )
+
+7.  Serious Injury Crashes Serious Injury Crashes = [Fatal Crashes] +
+    [Hospital Crashes]
+
+8.  Fatal % Fatal % = DIVIDE([Fatal Crashes], [Total Crashes])
+
+9.  Serious Injury % Serious Injury % = DIVIDE([Serious Injury Crashes],
+    [Total Crashes])
+
+10. Crashes by Year Crashes by Year = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[CRASH_YEAR]) )
+
+11. Crashes by Month Crashes by Month = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[CRASH_MONTH]) )
+
+12. Crashes by Day Crashes by Day = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[CRASH_DAY]) )
+
+13. Crashes by Hour Crashes by Hour = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[CRASH_HOUR]) )
+
+14. Crashes YTD Crashes YTD = TOTALYTD( [Total Crashes], ‘Date’[Date] )
+
+15. Crashes PY Crashes PY = CALCULATE( [Total Crashes],
+    SAMEPERIODLASTYEAR(‘Date’[Date]) )
+
+16. YTD Growth % YTD Growth % = DIVIDE([Crashes YTD] - [Crashes PY],
+    [Crashes PY])
+
+17. Rolling 12M Crashes Rolling 12M Crashes = CALCULATE( [Total
+    Crashes], DATESINPERIOD(‘Date’[Date], MAX(‘Date’[Date]), -12, MONTH)
+    )
+
+18. Crashes per Intersection Crashes per Intersection = CALCULATE(
+    [Total Crashes], ALLEXCEPT(‘Crash Information’, ‘Crash
+    Information’[INTERSECTION_NO]) )
+
+19. Intersection Rank Intersection Rank = RANKX( ALL(‘Intersection
+    Summary’[INTERSECTION_NO]), [Crashes per Intersection], , DESC )
+
+20. Is Top 10 Intersection Is Top 10 Intersection = IF([Intersection
+    Rank] <= 10, TRUE(), FALSE())
+
+21. Crashes by Road Crashes by Road = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[ROAD_NAME]) )
+
+22. Crashes by CWAY Crashes by CWAY = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[CWAY]) )
+
+23. Crashes by SLK Crashes by SLK = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[SLK]) )
+
+24. Crashes by Weather Crashes by Weather = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[ATMOSPHERICS]) )
+
+25. Crashes by Light Crashes by Light = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash Information’[LIGHT]) )
+
+26. Rain Crashes Rain Crashes = CALCULATE( [Total Crashes], ‘Crash
+    Information’[ATMOSPHERICS] = “Raining” )
+
+27. Night Crashes Night Crashes = CALCULATE( [Total Crashes], ‘Crash
+    Information’[LIGHT] IN { “Darkness”, “Dusk”, “Dawn” } )
+
+28. Motorcycle Crashes Motorcycle Crashes = SUM(‘Intersection
+    Summary’[MOTOR_CYCLE])
+
+29. Truck Crashes Truck Crashes = SUM(‘Intersection Summary’[TRUCK])
+
+30. Pedestrian Crashes Pedestrian Crashes = SUM(‘Intersection
+    Summary’[PEDESTRIAN])
+
+31. Bike Crashes Bike Crashes = SUM(‘Intersection Summary’[BIKE])
+
+32. Crashes by Factor Crashes by Factor = CALCULATE( [Total Crashes],
+    ALLEXCEPT(‘Crash Information’, ‘Crash
+    Information’[CONTRIBUTING_FACTOR_1]) )
+
+33. Speed Related Crashes Speed Related Crashes = CALCULATE( [Total
+    Crashes], CONTAINSSTRING(‘Crash Information’[CONTRIBUTING_FACTOR_1],
+    “Speed”) || CONTAINSSTRING(‘Crash
+    Information’[CONTRIBUTING_FACTOR_2], “Speed”) ||
+    CONTAINSSTRING(‘Crash Information’[CONTRIBUTING_FACTOR_3], “Speed”)
+    )
+
+34. Crash Risk Score Crash Risk Score = VAR FatalWeight = 5 VAR
+    HospWeight = 3 VAR MedWeight = 1 VAR Total = ([Fatal Crashes] *
+    FatalWeight) + ([Hospital Crashes] * HospWeight) + ([Medical
+    Crashes] * MedWeight) RETURN DIVIDE(Total, [Total Crashes], 0) * 20
+
+35. Peak Hour Peak Hour = VAR HourTable = SUMMARIZE( ‘Crash
+    Information’, ‘Crash Information’[CRASH_HOUR], “HourCrashes”,
+    [Crashes by Hour] ) RETURN MAXX(TOPN(1, HourTable, [HourCrashes],
+    DESC), ‘Crash Information’[CRASH_HOUR])

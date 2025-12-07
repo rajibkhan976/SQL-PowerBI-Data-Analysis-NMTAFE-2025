@@ -1,0 +1,81 @@
+SELECT a.ACC_ID, a.ROAD_NO, a.ROAD_NAME, a.COMMON_ROAD_NAME, b.ACC_ID, b.ROAD_NO, b.ROAD_NAME, b.COMMON_ROAD_NAME,
+ISNULL(a.ROAD_NAME,b.ROAD_NAME), ISNULL(a.COMMON_ROAD_NAME,b.COMMON_ROAD_NAME)
+
+FROM [project].[dbo].[CrashInformation] a
+JOIN [project].[dbo].[CrashInformation] b
+	ON a.ACC_ID = b.ACC_ID
+	AND a.OBJECTID <> b.OBJECTID
+WHERE a.ROAD_NAME is null OR a.COMMON_ROAD_NAME is null;
+
+UPDATE a
+SET ROAD_NAME=ISNULL(a.ROAD_NAME,b.ROAD_NAME),
+COMMON_ROAD_NAME = ISNULL(a.COMMON_ROAD_NAME,b.COMMON_ROAD_NAME)
+FROM [project].[dbo].[CrashInformation] a
+JOIN [project].[dbo].[CrashInformation] b
+	ON a.ACC_ID = b.ACC_ID
+	AND a.OBJECTID <> b.OBJECTID
+WHERE a.ROAD_NAME is null OR a.COMMON_ROAD_NAME is null;
+
+SELECT a.ACC_ID, a.ROAD_NO, a.ROAD_NAME, a.COMMON_ROAD_NAME, b.ACC_ID, b.ROAD_NO, b.ROAD_NAME, b.COMMON_ROAD_NAME,
+ISNULL(a.ROAD_NAME,b.ROAD_NAME), ISNULL(a.ROAD_NO,b.ROAD_NO)
+
+FROM [project].[dbo].[CrashInformation] a
+JOIN [project].[dbo].[CrashInformation] b
+	ON a.ACC_ID = b.ACC_ID
+	AND a.OBJECTID = b.OBJECTID
+WHERE a.ROAD_NAME is null OR a.ROAD_NO is null;
+
+SELECT a.ACC_ID, a.ROAD_NO, a.ROAD_NAME, a.COMMON_ROAD_NAME, b.ACC_ID, b.ROAD_NO, b.ROAD_NAME, b.COMMON_ROAD_NAME
+
+FROM [project].[dbo].[CrashInformation] a
+JOIN [project].[dbo].[CrashInformation] b
+	ON a.ACC_ID = b.ACC_ID
+	AND a.OBJECTID = b.OBJECTID
+WHERE a.ROAD_NAME is not null OR a.ROAD_NO is not null;
+
+UPDATE a
+SET ROAD_NAME=ISNULL(a.ROAD_NAME,b.ROAD_NAME),
+COMMON_ROAD_NAME = ISNULL(a.COMMON_ROAD_NAME,b.COMMON_ROAD_NAME)
+FROM [project].[dbo].[CrashInformation] a
+JOIN [project].[dbo].[CrashInformation] b
+	ON a.ACC_ID = b.ACC_ID
+	AND a.OBJECTID <> b.OBJECTID
+WHERE a.ROAD_NAME is null OR a.COMMON_ROAD_NAME is null;
+
+SELECT *,
+	ROW_NUMBER() OVER(
+	PARTITION BY ACC_ID,OBJECTID,ROAD_NO,ROAD_NAME,COMMON_ROAD_NAME,INTERSECTION_NO,INTERSECTION_DESC,X,Y
+	ORDER BY ACC_ID) row_num
+FROM [project].[dbo].[CrashInformation];
+
+WITH RowNumCTE as (
+SELECT *,
+	ROW_NUMBER() OVER(
+	PARTITION BY ACC_ID,OBJECTID,ROAD_NO,ROAD_NAME,COMMON_ROAD_NAME,INTERSECTION_NO,INTERSECTION_DESC,X,Y
+	ORDER BY ACC_ID) row_num
+FROM [project].[dbo].[CrashInformation]
+)
+
+SELECT * 
+FROM RowNumCTE
+WHERE row_num>1
+ ORDER BY ACC_ID;
+
+WITH DuplicateRowNumCTE as (
+SELECT *,
+	ROW_NUMBER() OVER(
+	PARTITION BY OBJECTID,INTERSECTION_NO,INTERSECTION_DESC,X,Y
+	ORDER BY OBJECTID) row_num
+FROM [project].[dbo].[CrashSummaryIntersections]
+)
+
+SELECT * 
+FROM DuplicateRowNumCTE
+WHERE row_num>1
+ ORDER BY OBJECTID;
+
+ ALTER TABLE [project].[dbo].[CrashInformation]
+DROP COLUMN LONGITUDE,LATITUDE;
+
+SELECT * FROM [project].[dbo].[CrashInformation];
+

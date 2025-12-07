@@ -1,0 +1,1 @@
+SELECT TOTAL_CRASHES FROM dbo.CrashSummaryIntersections WHERE INTERSECTION_DESC = 'Reid Hwy & Altone Rd';
